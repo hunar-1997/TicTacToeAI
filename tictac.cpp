@@ -1,15 +1,15 @@
 #include <stdio.h>
 
-int Board[9]={0, 0, 1,
-			  0, 1, 0,
+int Board[9]={0, 0, 0,
+			  0, 0, 0,
 			  0, 0, 0};
 const char s[] = "X 0";
 
 void printBoard(int b[]){ // print the board
-	printf("-----\n");
-	for(int j=0;j<3;++j, printf("\n"))
-		for(int i=0;i<3;++i)
-			printf("%c", s[ b[i+j*3]+1 ] );
+	for(int i=0;i<9;++i){
+		printf("%c", s[ b[i]+1 ] );
+		if( i%3==2 ) printf("\n");
+	}
 }
 
 int checkWin(int b[]){ //return the player that won
@@ -24,73 +24,97 @@ int checkWin(int b[]){ //return the player that won
 	if( b[0]==b[4] && b[4]==b[8] ) return b[4];
 	if( b[2]==b[4] && b[4]==b[6] ) return b[4];
 	
-	return 0; // zero means no one
+	return 0;	// zero means no one
 }
 
-int playerMove(){ // ask user for input
-	int r;
+void playerMove(int turn){ // ask user for input
+	int r;	// to store the input
 	printf("Your turn: ");
-	while(true){
+	while(true){	// test the input possiblity
 		if( scanf("%d", &r) ) 
 			if(r>0 && r<10)
-				if(Board[r]==0)
+				if(Board[r-1]==0)
 					break;
 				else printf("Not possible");
 			else printf("Must be between 1&9, ");
 		else printf("Not a number, ");
 		printf("try again: ");
 	}
-	return r; // return the selected move's position
+	Board[r-1] = turn;	// do the legal move
 }
 
 struct Data{
 	int score=0;
 	int position;
 };
-
-int aiMove(int b[], int turn){ // AI movement
+int h;
+Data aiMove(int b[], int turn){ // AI movement
+	Data toR;	// to return
+	
 	int available[9]; // empty positions
 	int count=0;
-	
 	for(int i=0;i<9;++i)
 		if( b[i]==0 )
 			available[count++]=i;
 	
-	if(count==0) return 10; // no move available
+	if(count==0){
+		toR.position = 10;
+		return toR;	// no position available
+	}
 	
 	Data result[9];
 	for(int i=0;i<count;++i){
-		// calculate this position
+		// calculate each available position
 		b[ available[i] ] = turn;
 		int ws = checkWin(b);
 	
-		if(ws==turn){
-			result[ available[i] ].score += 100;
-			result[ available[i] ].position = available[i];
+		if(ws==turn){  // will this move make me win
+			result[ available[i] ].score += 1;
+		}else{
+			int r = aiMove(b, turn*-1).score;
+			result[ available[i] ].score -= r;
+			h++;
 		}
-		// reset table
-		b[ available[i] ] = 0;
+		result[ available[i] ].position = available[i];
+		
+		b[ available[i] ] = 0;	// reset table
 	}
 	
-	int highest = -100, pos=10; // select the one with highest score
-	for(int i=0;i<count;++i)
-		if(result[available[i]].score>highest){
-			highest = result[available[i]].score;
-			pos = result[available[i]].position;
-		}
+	// Now the moves contain score
 	
-	return pos;
+	toR.score = -100;
+	toR.position = 10;
+	// select the best move by score
+	for(int i=0;i<count;++i)
+		if(result[available[i]].score>toR.score){
+			toR.score = result[available[i]].score;
+			toR.position = available[i];
+		}
+	return toR;
 }
 
-
 int main(){
-	bool stillPlaying=true;
-	
-	printf( "win location %d", aiMove(Board, 1)+1 );
-	
-	while( stillPlaying ){
-		break;
-		int move = playerMove();
+	bool stilRunning=true;
+	while(stilRunning){
+		h=0;
+		playerMove(-1);
+		
+		int won = checkWin(Board);
+		if(won==0)
+			Board[ aiMove(Board, 1).position ] = 1;
+		printBoard(Board);
+		printf("Recursion: %d\n", h);
+		won = checkWin(Board);
+		if( won != 0 ){
+			stilRunning=false;
+			printf("%c won the game\n", s[won+1]);
+			break;
+		}
+		
+		for(int i=0;i<10;i++){
+			if(i==9) stilRunning=false;
+			if(Board[i]==0) break;
+		}
 	}
 	
 	return 0;
