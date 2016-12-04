@@ -3,7 +3,7 @@
 int Board[9]={0, 0, 0,
 			  0, 0, 0,
 			  0, 0, 0};
-const char s[] = "X 0";
+const char s[] = "0 X";
 
 void printBoard(int b[]){ // print the board
 	for(int i=0;i<9;++i){
@@ -29,16 +29,15 @@ int checkWin(int b[]){ //return the player that won
 
 void playerMove(int turn){ // ask user for input
 	int r;	// to store the input
-	printf("Your turn: ");
 	while(true){	// test the input possiblity
 		if( scanf("%d", &r) ) 
 			if(r>0 && r<10)
 				if(Board[r-1]==0)
 					break;
 				else printf("Not possible");
-			else printf("Must be between 1&9, ");
-		else printf("Not a number, ");
-		printf("try again: ");
+			else printf("Must be between 1&9");
+		else printf("Not a number");
+		printf(", try again: ");
 	}
 	Board[r-1] = turn;	// do the legal move
 }
@@ -47,7 +46,7 @@ struct Data{
 	int score=0;
 	int position;
 };
-int h;
+
 Data aiMove(int b[], int turn){ // AI movement
 	Data toR;	// to return
 	
@@ -73,7 +72,6 @@ Data aiMove(int b[], int turn){ // AI movement
 		}else{
 			int r = aiMove(b, turn*-1).score;
 			result[ available[i] ].score -= r;
-			h++;
 		}
 		result[ available[i] ].position = available[i];
 		
@@ -81,7 +79,6 @@ Data aiMove(int b[], int turn){ // AI movement
 	}
 	
 	// Now the moves contain score
-	
 	toR.score = -100;
 	toR.position = 10;
 	// select the best move by score
@@ -95,26 +92,34 @@ Data aiMove(int b[], int turn){ // AI movement
 
 int main(){
 	bool stilRunning=true;
+	int turn = -1;
 	while(stilRunning){
-		h=0;
-		playerMove(-1);
-		
 		int won = checkWin(Board);
-		if(won==0)
-			Board[ aiMove(Board, 1).position ] = 1;
-		printBoard(Board);
-		printf("Recursion: %d\n", h);
-		won = checkWin(Board);
 		if( won != 0 ){
 			stilRunning=false;
 			printf("%c won the game\n", s[won+1]);
 			break;
 		}
 		
+		printf("%c's turn: ",s[turn+1]);
+		if(turn==1){
+			playerMove(1);
+		}else{
+			Board[ aiMove(Board, -1).position ] = -1;
+			printf("\n");
+		}
+		
+		printBoard(Board);
+		
 		for(int i=0;i<10;i++){
-			if(i==9) stilRunning=false;
+			if(i==9){
+				stilRunning=false;
+				printf("No body wins");
+			}
 			if(Board[i]==0) break;
 		}
+		
+		turn *= -1;
 	}
 	
 	return 0;
