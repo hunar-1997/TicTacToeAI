@@ -36,7 +36,10 @@ void playerMove(int turn){ // ask user for input
 					break;
 				else printf("Not possible");
 			else printf("Must be between 1&9");
-		else printf("Not a number");
+		else{
+			printf("Not a number");
+			while(getchar()!='\n');
+		}
 		printf(", try again: ");
 	}
 	Board[r-1] = turn;	// do the legal move
