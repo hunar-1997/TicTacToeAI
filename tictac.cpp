@@ -90,10 +90,40 @@ Data aiMove(int b[], int turn){ // AI movement
 	return toR;
 }
 
+void choose(int *re){
+	printf("-1 for human and 1 for computer\n");
+	printf("first player is: ");
+	int r;
+	int ptr=0;
+	while(true){
+		if( scanf("%d", &r) ){
+			if(r==1 || r==-1){
+				re[ptr] = r;
+				ptr++;
+				if(ptr>1) break;
+			}else{
+				printf("Must be 1 or -1: ");
+				continue;
+			}
+		}else{
+			printf("Not a number: ");
+			continue;
+		}
+		printf("second player is: ");
+	}
+}
+
 int main(){
 	bool stilRunning=true;
 	int turn = -1;
+	int player[] = {-1,1}; // 1:computer -1:human
+	choose(player);
+	int pt = 0;
+	
 	while(stilRunning){
+		printf("============\n");
+		
+		// check for win
 		int won = checkWin(Board);
 		if( won != 0 ){
 			stilRunning=false;
@@ -102,15 +132,16 @@ int main(){
 		}
 		
 		printf("%c's turn: ",s[turn+1]);
-		if(turn==1){
-			playerMove(1);
+		if(player[pt]==-1){
+			playerMove(turn);
 		}else{
-			Board[ aiMove(Board, -1).position ] = -1;
+			Board[ aiMove(Board, turn).position ] = turn;
 			printf("\n");
 		}
 		
 		printBoard(Board);
 		
+		// is there any empty position
 		for(int i=0;i<10;i++){
 			if(i==9){
 				stilRunning=false;
@@ -120,6 +151,7 @@ int main(){
 		}
 		
 		turn *= -1;
+		pt = (pt==0)?1:0;
 	}
 	
 	return 0;
