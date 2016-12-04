@@ -107,6 +107,7 @@ void choose(int *re){
 			}
 		}else{
 			printf("Not a number: ");
+			while(getchar()!='\n');
 			continue;
 		}
 		printf("second player is: ");
